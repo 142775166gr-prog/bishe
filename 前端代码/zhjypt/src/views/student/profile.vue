@@ -34,9 +34,6 @@
       <el-form-item label="邮箱" prop="stuEmail">
         <el-input v-model="form.stuEmail"></el-input>
       </el-form-item>
-      <el-form-item label="大学" prop="stuUniversity">
-        <el-input v-model="form.stuUniversity" placeholder="请输入大学"></el-input>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submit">保存</el-button>
       </el-form-item>

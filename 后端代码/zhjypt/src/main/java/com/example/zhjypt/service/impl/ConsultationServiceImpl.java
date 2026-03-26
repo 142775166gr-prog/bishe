@@ -82,6 +82,8 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         Page<Consultation> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Consultation> wrapper = new QueryWrapper<>();
         wrapper.eq("student_id", studentId);
+        // 对齐数据库：逻辑删除 del=0 才是有效咨询
+        wrapper.eq("del", 0);
         
         if (status != null) {
             wrapper.eq("status", status);
@@ -97,6 +99,8 @@ public class ConsultationServiceImpl extends ServiceImpl<ConsultationMapper, Con
         Page<Consultation> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Consultation> wrapper = new QueryWrapper<>();
         wrapper.eq("teacher_id", teacherId);
+        // 对齐数据库：逻辑删除 del=0 才是有效咨询
+        wrapper.eq("del", 0);
         
         if (status != null) {
             wrapper.eq("status", status);

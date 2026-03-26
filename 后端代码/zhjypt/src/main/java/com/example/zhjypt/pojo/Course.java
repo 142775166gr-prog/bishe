@@ -2,6 +2,7 @@ package com.example.zhjypt.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -49,12 +50,15 @@ public class Course implements Serializable {
     private Integer teacherId;
 
     @ApiModelProperty(value = "授课教师姓名")
+    @TableField(exist = false)
     private String teacherName;
 
     @ApiModelProperty(value = "课程分类名称")
+    @TableField(exist = false)
     private String categoryName;
 
     @ApiModelProperty(value = "课程价格")
+    @TableField(exist = false)
     private BigDecimal coursePrice;
 
     @ApiModelProperty(value = "课程时长（分钟）")
@@ -67,6 +71,7 @@ public class Course implements Serializable {
     private Integer courseStatus;
 
     @ApiModelProperty(value = "是否免费，0收费，1免费")
+    @TableField(exist = false)
     private Integer isFree;
 
     @ApiModelProperty(value = "难度等级：1初级，2中级，3高级")

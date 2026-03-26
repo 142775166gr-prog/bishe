@@ -16,8 +16,8 @@ export const toggleSuggestionFavorite = (suggestionId, studentId) => {
 }
 
 // 获取学生收到的建议列表
-export const getStudentSuggestions = (studentId, suggestionType, isRead, pageNum = 1, pageSize = 10) => {
-  return get('/suggestion/student/list', { studentId, suggestionType, isRead, pageNum, pageSize })
+export const getStudentSuggestions = (studentId, suggestionType, isRead, isFavorite, pageNum = 1, pageSize = 10) => {
+  return get('/suggestion/student/list', { studentId, suggestionType, isRead, isFavorite, pageNum, pageSize })
 }
 
 // 获取教师发送的建议列表

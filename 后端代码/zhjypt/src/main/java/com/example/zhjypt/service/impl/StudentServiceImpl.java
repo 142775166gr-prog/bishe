@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.zhjypt.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.zhjypt.utils.PasswordUtil;
 
 import java.util.List;
 
@@ -42,6 +43,8 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
 
         // 2. 保存新学生
+        // 默认：把入参密码转成 BCrypt（避免明文入库）
+        student.setStuPassword(PasswordUtil.hashIfNeeded(student.getStuPassword()));
         boolean saved = this.save(student);
         if (saved) {
             return ResultVO.success("添加成功", student);
@@ -71,7 +74,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
         // 处理stu_password：非null且非空才更新
         if (student.getStuPassword() != null && !student.getStuPassword().trim().isEmpty()) {
-            updateWrapper.set("stu_password", student.getStuPassword());
+            updateWrapper.set("stu_password", PasswordUtil.hashIfNeeded(student.getStuPassword()));
         }
         // 处理stu_phone：非null且非空才更新
         if (student.getStuPhone() != null && !student.getStuPhone().trim().isEmpty()) {
@@ -181,9 +184,17 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         if(current == null){
             return ResultVO.fail("账号不存在");
         }else {
-            if (current.getStuPassword().equals(student.getStuPassword())) {
+            boolean matched = PasswordUtil.matches(student.getStuPassword(), current.getStuPassword());
+            if (matched) {
+                // 如果历史库里是明文，则登录成功后顺便升级成 BCrypt
+                if (!PasswordUtil.isBCryptHash(current.getStuPassword())) {
+                    UpdateWrapper<Student> upgradeWrapper = new UpdateWrapper<>();
+                    upgradeWrapper.eq("stu_id", current.getStuId());
+                    upgradeWrapper.set("stu_password", PasswordUtil.hashIfNeeded(student.getStuPassword()));
+                    this.update(null, upgradeWrapper);
+                }
                 return ResultVO.success("登录成功", current);
-            }else {
+            } else {
                 return ResultVO.fail("密码错误");
             }
         }
@@ -199,7 +210,7 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
         }
         UpdateWrapper<Student> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("stu_id", stuId);
-        updateWrapper.set("stu_password", newPassword);
+        updateWrapper.set("stu_password", PasswordUtil.hashIfNeeded(newPassword));
         boolean updated = this.update(null, updateWrapper);
         if (updated) {
             Student updatedStudent = this.getById(stuId);

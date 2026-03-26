@@ -35,13 +35,16 @@ export function initRouter() {
     component: () => import('../views/layout/Layout.vue'),
     children: []
   };
+
   const menus = store.getters.menus || [];
   if (!menus || menus.length === 0) {
     console.warn('initRouter: 菜单为空，跳过动态路由注册');
     return;
   }
+
   // 获取可用组件映射
   const modules = import.meta.glob('../views/**/*.vue');
+
   for (const menu of menus) {
     (menu.children || []).forEach((temp) => {
       const item = {};
@@ -49,19 +52,24 @@ export function initRouter() {
       let vueName = temp.path;
       const indexN = temp.path.lastIndexOf('/') + 1;
       vueName = vueName.substr(0, indexN) + vueName.substring(indexN).charAt(0).toUpperCase() + vueName.substring(indexN + 1);
+
       // 尝试多种解析策略以提高容错
       let comp = modules[`../views${vueName}.vue`] || modules[`../views${temp.path}.vue`] || modules[`../views${temp.path.substring(1)}.vue`];
+
       // 回退到运行时 import
       if (!comp) {
         comp = () => import(`../views${temp.path}.vue`);
       }
+
       item.component = comp;
       item.path = temp.path;
       item.name = temp.title;
       appendRoute.children.push(item);
+
       console.debug('initRouter: prepare child', temp.path);
     });
   }
+
   // 移除已存在的 layout 路由，避免重复注册
   const exists = router.getRoutes().find(r => r.name === 'layout');
   if (exists) {
@@ -72,6 +80,7 @@ export function initRouter() {
       console.warn('initRouter: removeRoute failed', e);
     }
   }
+
   // 添加固定的个人信息和修改密码路由（不在侧边菜单中显示）
   const staticChildren = [
     { path: '/admin/profile', name: 'AdminProfile', component: modules['../views/admin/profile.vue'] || (() => import('../views/admin/profile.vue')) },
@@ -89,7 +98,9 @@ export function initRouter() {
     { path: '/student/exam', name: 'Exam', component: modules['../views/student/exam.vue'] || (() => import('../views/student/exam.vue')) },
     { path: '/student/examhistory', name: 'ExamHistory', component: modules['../views/student/examhistory.vue'] || (() => import('../views/student/examhistory.vue')) }
   ];
+
   appendRoute.children = appendRoute.children.concat(staticChildren);
+
   if (appendRoute.children.length > 0) {
     router.addRoute(appendRoute);
     console.info(`initRouter: 注册了 ${appendRoute.children.length} 个子路由`);
@@ -97,6 +108,7 @@ export function initRouter() {
     console.warn('initRouter: 没有发现任何子路由，未注册 layout 子路由');
   }
 }
+
 //路由守卫
 router.beforeEach((to, from, next) => {
   let rules = ['/', '/login']

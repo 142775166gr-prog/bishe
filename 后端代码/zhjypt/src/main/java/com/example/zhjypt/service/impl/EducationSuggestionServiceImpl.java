@@ -53,10 +53,12 @@ public class EducationSuggestionServiceImpl extends ServiceImpl<EducationSuggest
     }
 
     @Override
-    public Page<EducationSuggestion> getStudentSuggestions(Integer studentId, Integer suggestionType, Integer isRead, Integer pageNum, Integer pageSize) {
+    public Page<EducationSuggestion> getStudentSuggestions(Integer studentId, Integer suggestionType, Integer isRead, Integer isFavorite, Integer pageNum, Integer pageSize) {
         Page<EducationSuggestion> page = new Page<>(pageNum, pageSize);
         QueryWrapper<EducationSuggestion> wrapper = new QueryWrapper<>();
         wrapper.eq("student_id", studentId);
+        // 按数据库字段过滤逻辑删除
+        wrapper.eq("del", 0);
         
         if (suggestionType != null) {
             wrapper.eq("suggestion_type", suggestionType);
@@ -64,6 +66,10 @@ public class EducationSuggestionServiceImpl extends ServiceImpl<EducationSuggest
         
         if (isRead != null) {
             wrapper.eq("is_read", isRead);
+        }
+
+        if (isFavorite != null) {
+            wrapper.eq("is_favorite", isFavorite);
         }
         
         wrapper.orderByDesc("create_time");
@@ -76,6 +82,7 @@ public class EducationSuggestionServiceImpl extends ServiceImpl<EducationSuggest
         Page<EducationSuggestion> page = new Page<>(pageNum, pageSize);
         QueryWrapper<EducationSuggestion> wrapper = new QueryWrapper<>();
         wrapper.eq("teacher_id", teacherId);
+        wrapper.eq("del", 0);
         wrapper.orderByDesc("create_time");
         
         return this.page(page, wrapper);

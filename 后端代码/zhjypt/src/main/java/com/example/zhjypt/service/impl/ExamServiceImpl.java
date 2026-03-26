@@ -231,7 +231,7 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
         try {
             // 查询教师的所有课程
             QueryWrapper<Course> courseWrapper = new QueryWrapper<>();
-            courseWrapper.eq("teach_id", teacherId);
+            courseWrapper.eq("teacher_id", teacherId);
             courseWrapper.eq("del", 0);
             List<Course> courses = courseMapper.selectList(courseWrapper);
             
@@ -253,7 +253,6 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
                     QueryWrapper<StudentExamRecord> recordWrapper = new QueryWrapper<>();
                     recordWrapper.eq("exam_id", exam.getExamId());
                     recordWrapper.eq("exam_status", 1); // 已提交
-                    recordWrapper.eq("del", 0);
                     totalCount += studentExamRecordMapper.selectCount(recordWrapper).intValue();
                 }
             }
@@ -270,8 +269,7 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
         try {
             // 查询学生选修的所有课程
             QueryWrapper<StudentCourse> scWrapper = new QueryWrapper<>();
-            scWrapper.eq("stu_id", studentId);
-            scWrapper.eq("del", 0);
+            scWrapper.eq("student_id", studentId);
             List<StudentCourse> studentCourses = studentCourseMapper.selectList(scWrapper);
             
             if (studentCourses == null || studentCourses.isEmpty()) {
@@ -294,7 +292,6 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
                     recordWrapper.eq("student_id", studentId);
                     recordWrapper.eq("exam_id", exam.getExamId());
                     recordWrapper.in("exam_status", 1, 2); // 已提交或已评分
-                    recordWrapper.eq("del", 0);
                     
                     if (studentExamRecordMapper.selectCount(recordWrapper) == 0) {
                         totalCount++; // 未完成的考试

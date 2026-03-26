@@ -116,13 +116,16 @@ export default {
     },
     async loadSuggestions() {
       try {
-        const res = await getStudentSuggestions(this.currentUser.stuId, this.filterType, this.filterRead, this.pageNum, this.pageSize)
+        const res = await getStudentSuggestions(
+          this.currentUser.stuId,
+          this.filterType,
+          this.filterRead,
+          this.filterFavorite,
+          this.pageNum,
+          this.pageSize
+        )
         if (res.flag) {
-          let list = res.result || []
-          if (this.filterFavorite === 1) {
-            list = list.filter(item => item.isFavorite === 1)
-          }
-          this.suggestions = list
+          this.suggestions = res.result || []
           this.total = res.total || 0
         }
       } catch (e) {

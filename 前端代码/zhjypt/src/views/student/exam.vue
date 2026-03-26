@@ -480,6 +480,7 @@ export default {
             unansweredQuestions.push(index + 1)
           }
         })
+
         // 如果有未答题，提示用户
         if (unansweredQuestions.length > 0) {
           const message = `还有 ${unansweredQuestions.length} 道题未作答：第 ${unansweredQuestions.join('、')} 题。是否确定提交？`
@@ -495,10 +496,12 @@ export default {
             cancelButtonText: '再检查一下'
           })
         }
+        
         // 停止计时器
         if (timer.value) {
           clearInterval(timer.value)
         }
+        
         // 计算用时
         const timeUsed = examInfo.value && examInfo.value.timeLimit 
           ? examInfo.value.timeLimit - Math.floor(remainingTime.value / 60)
@@ -509,6 +512,7 @@ export default {
         if (examInfo.value && examInfo.value.examType === 1) {
           studentScore = calculateScore()
         }
+        
         // 保存学生答案到数据库
         if (currentRecordId.value) {
           try {
@@ -565,6 +569,7 @@ export default {
             return
           }
         }
+        
         // 提交考试记录
         if (currentRecordId.value) {
           const submitRes = await submitExamRecord({
@@ -589,8 +594,10 @@ export default {
           ElMessage.error('考试记录ID丢失，提交失败')
           return
         }
+        
         console.log('提交的答案:', answers)
         console.log('用时:', timeUsed, '分钟')
+        
         // 跳转回考试列表
         setTimeout(() => {
           goBack(true) // 提交成功后直接返回，不需要确认

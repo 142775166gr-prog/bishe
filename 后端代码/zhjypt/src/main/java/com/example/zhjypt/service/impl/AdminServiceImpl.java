@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.zhjypt.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.zhjypt.utils.PasswordUtil;
 
 import java.util.List;
 
@@ -40,9 +41,16 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         if(currentAdmin == null){
             return ResultVO.fail("账号不存在");
         }else {
-            if (currentAdmin.getAdmPassword().equals(admin.getAdmPassword())) {
+            boolean matched = PasswordUtil.matches(admin.getAdmPassword(), currentAdmin.getAdmPassword());
+            if (matched) {
+                if (!PasswordUtil.isBCryptHash(currentAdmin.getAdmPassword())) {
+                    UpdateWrapper<Admin> upgradeWrapper = new UpdateWrapper<>();
+                    upgradeWrapper.eq("adm_id", currentAdmin.getAdmId());
+                    upgradeWrapper.set("adm_password", PasswordUtil.hashIfNeeded(admin.getAdmPassword()));
+                    this.update(null, upgradeWrapper);
+                }
                 return ResultVO.success("登录成功", currentAdmin);
-            }else {
+            } else {
                 return ResultVO.fail("密码错误");
             }
         }
@@ -50,6 +58,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
 
     @Override
     public ResultVO<Admin> AddAdmin(Admin admin) {
+        // 默认：把入参密码转成 BCrypt（避免明文入库）
+        admin.setAdmPassword(PasswordUtil.hashIfNeeded(admin.getAdmPassword()));
         this.save(admin);
         return ResultVO.success("添加成功",admin);
     }
@@ -75,7 +85,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         }
         // 处理adm_password：非null且非空才更新
         if (admin.getAdmPassword() != null && !admin.getAdmPassword().trim().isEmpty()) {
-            updateWrapper.set("adm_password", admin.getAdmPassword());
+            updateWrapper.set("adm_password", PasswordUtil.hashIfNeeded(admin.getAdmPassword()));
         }
         // 处理adm_phone：非null且非空才更新
         if (admin.getAdmPhone() != null && !admin.getAdmPhone().trim().isEmpty()) {

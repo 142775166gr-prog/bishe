@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -147,6 +150,37 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
         chapterWrapper.eq("course_id", courseId);
         chapterWrapper.eq("del", 0);
         Integer totalChapters = courseChapterMapper.selectCount(chapterWrapper);
+
+        // 预先缓存：每个章节对应的 content_id 列表
+        // 避免在循环里用字符串拼接 SQL（inSql + + chapterId），降低注入风险
+        List<com.example.zhjypt.pojo.CourseChapter> chapters = new ArrayList<>();
+        Map<Integer, List<Integer>> chapterContentIdsCache = new HashMap<>();
+        if (totalChapters > 0) {
+            QueryWrapper<com.example.zhjypt.pojo.CourseChapter> chaptersQuery = new QueryWrapper<>();
+            chaptersQuery.eq("course_id", courseId);
+            chaptersQuery.eq("del", 0);
+            chaptersQuery.select("chapter_id");
+            chapters = courseChapterMapper.selectList(chaptersQuery);
+
+            for (com.example.zhjypt.pojo.CourseChapter chapter : chapters) {
+                Integer chapterId = chapter.getChapterId();
+                if (chapterId == null) continue;
+
+                QueryWrapper<com.example.zhjypt.pojo.ChapterContent> contentQuery = new QueryWrapper<>();
+                contentQuery.eq("chapter_id", chapterId);
+                contentQuery.eq("del", 0);
+                contentQuery.select("content_id");
+                List<com.example.zhjypt.pojo.ChapterContent> contentList = chapterContentMapper.selectList(contentQuery);
+
+                List<Integer> contentIds = new ArrayList<>();
+                for (com.example.zhjypt.pojo.ChapterContent content : contentList) {
+                    if (content.getContentId() != null) {
+                        contentIds.add(content.getContentId());
+                    }
+                }
+                chapterContentIdsCache.put(chapterId, contentIds);
+            }
+        }
         
         // 为每个学生计算统计信息
         for (StudentCourse sc : studentCourses) {
@@ -162,20 +196,17 @@ public class StudentCourseServiceImpl extends ServiceImpl<StudentCourseMapper, S
                 // 统计已完成的章节数（至少完成了该章节中一个内容的章节）
                 int completedChapters = 0;
                 if (totalChapters > 0) {
-                    // 获取该课程的所有章节ID
-                    QueryWrapper<com.example.zhjypt.pojo.CourseChapter> chaptersQuery = new QueryWrapper<>();
-                    chaptersQuery.eq("course_id", courseId);
-                    chaptersQuery.eq("del", 0);
-                    chaptersQuery.select("chapter_id");
-                    List<com.example.zhjypt.pojo.CourseChapter> chapters = courseChapterMapper.selectList(chaptersQuery);
-                    
                     // 对每个章节，检查学生是否完成了至少一个内容
                     for (com.example.zhjypt.pojo.CourseChapter chapter : chapters) {
                         Integer chapterId = chapter.getChapterId();
+                        List<Integer> contentIds = chapterContentIdsCache.get(chapterId);
+                        if (contentIds == null || contentIds.isEmpty()) continue;
+
                         QueryWrapper<com.example.zhjypt.pojo.StudentContentProgress> progressWrapper = new QueryWrapper<>();
                         progressWrapper.eq("student_id", sc.getStudentId());
                         progressWrapper.eq("is_completed", 1);
-                        progressWrapper.inSql("content_id", "SELECT content_id FROM chapter_content WHERE chapter_id = " + chapterId + " AND del = 0");
+                        // 使用参数化 in 查询，避免字符串拼接 SQL
+                        progressWrapper.in("content_id", contentIds);
                         Integer count = studentContentProgressMapper.selectCount(progressWrapper);
                         if (count > 0) {
                             completedChapters++;

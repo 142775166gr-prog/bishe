@@ -38,6 +38,7 @@ public class StudentContentProgressServiceImpl extends ServiceImpl<StudentConten
                 .eq("content_id", contentId);
         
         StudentContentProgress progress = this.getOne(wrapper);
+        
         if (progress != null) {
             // 更新现有记录 - 进度只能增加，不能倒退
             boolean needUpdate = false;
@@ -48,20 +49,24 @@ public class StudentContentProgressServiceImpl extends ServiceImpl<StudentConten
                 progress.setUpdateTime(new Date());
                 needUpdate = true;
             }
+            
             // 如果还未完成，但观看进度达到80%以上，标记为已完成
             if (progress.getIsCompleted() == 0 && watchProgress >= 80) {
                 progress.setIsCompleted(1);
                 progress.setCompletedTime(new Date());
                 needUpdate = true;
             }
+            
             boolean updated = false;
             if (needUpdate) {
                 updated = this.updateById(progress);
+                
                 // 更新学生课程总进度
                 if (updated) {
                     updateStudentCourseProgress(studentId, courseId);
                 }
             }
+            
             return needUpdate ? updated : true; // 如果不需要更新也返回true
         } else {
             // 创建新记录
@@ -73,23 +78,29 @@ public class StudentContentProgressServiceImpl extends ServiceImpl<StudentConten
             newProgress.setWatchProgress(watchProgress);
             newProgress.setFirstStudyTime(new Date());
             newProgress.setUpdateTime(new Date());
+            
             // 如果观看进度达到80%以上，标记为已完成
             if (watchProgress >= 80) {
                 newProgress.setIsCompleted(1);
                 newProgress.setCompletedTime(new Date());
             }
+            
             boolean saved = this.save(newProgress);
+            
             // 更新学生课程总进度
             if (saved) {
                 updateStudentCourseProgress(studentId, courseId);
             }
+            
             return saved;
         }
     }
+
     @Override
     public boolean markCompleted(Integer studentId, Integer courseId, Integer chapterId, Integer contentId) {
         return updateProgress(studentId, courseId, chapterId, contentId, 100);
     }
+
     @Override
     public BigDecimal calculateCourseProgress(Integer studentId, Integer courseId) {
         return baseMapper.calculateCourseProgress(studentId, courseId);

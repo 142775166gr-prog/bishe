@@ -59,6 +59,15 @@
           <el-button v-if="item.status === 0" type="primary" size="small" @click="showReplyDialog(item)">
             回复
           </el-button>
+          <el-button v-if="item.status === 0" :type="item.priority === 1 ? 'default' : 'warning'" size="small" @click="togglePriority(item)">
+            {{ item.priority === 1 ? '取消紧急' : '标记紧急' }}
+          </el-button>
+          <el-button v-if="item.status === 0 || item.status === 1" type="warning" size="small" @click="closeConsultation(item)">
+            关闭
+          </el-button>
+          <el-button type="danger" size="small" @click="deleteConsultation(item)">
+            删除
+          </el-button>
         </div>
       </div>
     </div>
@@ -66,13 +75,13 @@
     <!-- 分页 -->
     <el-pagination
       v-if="total > 0"
-      :current-page="pageNum"
-      :page-size="pageSize"
+      v-model:current-page="pageNum"
+      v-model:page-size="pageSize"
       :total="total"
       :page-sizes="[10, 20, 50]"
       layout="total, sizes, prev, pager, next, jumper"
-      @size-change="(size) => { pageSize = size; pageNum = 1; loadConsultations() }"
-      @current-change="(page) => { pageNum = page; loadConsultations() }"
+      @size-change="loadConsultations"
+      @current-change="loadConsultations"
     />
 
     <!-- 回复对话框 -->
@@ -98,8 +107,7 @@
 </template>
 
 <script>
-import { getTeacherConsultations, replyConsultation, getTeacherUnrepliedCount } from '../../api/consultation.js'
-import { getTeacherCoursesList } from '../../api/course.js'
+import { getTeacherConsultations, replyConsultation, setConsultationPriority, closeConsultation as closeConsultationApi, deleteConsultation as deleteConsultationApi, getTeacherUnrepliedCount } from '../../api/consultation.js'
 import { getSessionStorage } from '../../utils/common.js'
 
 export default {
@@ -161,22 +169,8 @@ export default {
     },
 
     async loadMyCourses() {
-      if (!this.currentUser?.teachId) {
-        this.myCourses = []
-        return
-      }
-
-      try {
-        const res = await getTeacherCoursesList(this.currentUser.teachId)
-        if (res && res.flag) {
-          this.myCourses = res.result || []
-        } else {
-          this.myCourses = []
-        }
-      } catch (e) {
-        console.error('加载教师课程列表失败', e)
-        this.myCourses = []
-      }
+      // 调用获取教师课程列表的API
+      // 暂时留空，根据实际API调整
     },
 
     showReplyDialog(item) {
@@ -211,6 +205,59 @@ export default {
           this.replying = false
         }
       })
+    },
+
+    async togglePriority(item) {
+      try {
+        const newPriority = item.priority === 1 ? 0 : 1
+        const res = await setConsultationPriority(item.consultationId, newPriority, this.currentUser.teachId)
+        if (res.flag) {
+          this.$message.success(newPriority === 1 ? '已标记为紧急' : '已取消紧急标记')
+          item.priority = newPriority
+        }
+      } catch (e) {
+        console.error('设置优先级失败', e)
+      }
+    },
+
+    async closeConsultation(item) {
+      try {
+        await this.$confirm('确定要关闭此咨询吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        
+        const res = await closeConsultationApi(item.consultationId)
+        if (res.flag) {
+          this.$message.success('咨询已关闭')
+          this.loadConsultations()
+        }
+      } catch (e) {
+        if (e !== 'cancel') {
+          console.error('关闭失败', e)
+        }
+      }
+    },
+
+    async deleteConsultation(item) {
+      try {
+        await this.$confirm('确定要删除此咨询吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+        
+        const res = await deleteConsultationApi(item.consultationId, this.currentUser.teachId, 'teacher')
+        if (res.flag) {
+          this.$message.success('删除成功')
+          this.loadConsultations()
+        }
+      } catch (e) {
+        if (e !== 'cancel') {
+          console.error('删除失败', e)
+        }
+      }
     },
 
     formatTime(time) {

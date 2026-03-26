@@ -104,10 +104,11 @@ public class EducationSuggestionController {
             @RequestParam Integer studentId,
             @RequestParam(required = false) Integer suggestionType,
             @RequestParam(required = false) Integer isRead,
+            @RequestParam(required = false) Integer isFavorite,
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize) {
         try {
-            Page<EducationSuggestion> page = suggestionService.getStudentSuggestions(studentId, suggestionType, isRead, pageNum, pageSize);
+            Page<EducationSuggestion> page = suggestionService.getStudentSuggestions(studentId, suggestionType, isRead, isFavorite, pageNum, pageSize);
             return ResultVO.success("查询成功", page.getRecords(), page.getTotal());
         } catch (Exception e) {
             e.printStackTrace();

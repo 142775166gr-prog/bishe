@@ -32,7 +32,7 @@ public interface EducationSuggestionService extends IService<EducationSuggestion
     /**
      * 获取学生收到的建议列表（分页）
      */
-    Page<EducationSuggestion> getStudentSuggestions(Integer studentId, Integer suggestionType, Integer isRead, Integer pageNum, Integer pageSize);
+    Page<EducationSuggestion> getStudentSuggestions(Integer studentId, Integer suggestionType, Integer isRead, Integer isFavorite, Integer pageNum, Integer pageSize);
 
     /**
      * 获取教师发送的建议列表（分页）

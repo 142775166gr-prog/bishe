@@ -122,6 +122,7 @@ export default {
   },
   // 组件创建生命周期钩子（实例创建完成后调用）
   created() {
+    //发送请求获取所有表的扩展信息？？（原始注释：预留业务逻辑位置）
     // 加载未读回复数量
     if (this.role !== 'admin') {
       this.loadUnreadCount();

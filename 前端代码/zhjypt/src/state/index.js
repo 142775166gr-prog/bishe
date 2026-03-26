@@ -1,4 +1,5 @@
 import { createStore } from 'vuex'
+
 export default createStore({
     state: {
         tabs: [],
@@ -88,6 +89,7 @@ export default createStore({
         },
     },
     actions: {
+
     },
     modules: {
     }
