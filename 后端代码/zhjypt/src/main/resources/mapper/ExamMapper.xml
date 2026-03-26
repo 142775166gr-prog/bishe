@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.ExamMapper">
+
+    <!-- 根据课程ID获取考试列表 -->
+    <select id="selectExamsByCourseId" resultType="com.example.zhjypt.pojo.Exam">
+        SELECT * FROM exam 
+        WHERE course_id = #{courseId} AND del = 0 
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取学生可参加的考试列表（已发布且在有效期内） -->
+    <select id="selectAvailableExams" resultType="com.example.zhjypt.pojo.Exam">
+        SELECT * FROM exam 
+        WHERE course_id = #{courseId} 
+        AND exam_status = 1 
+        AND del = 0
+        AND (start_time IS NULL OR start_time &lt;= NOW())
+        AND (end_time IS NULL OR end_time &gt;= NOW())
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

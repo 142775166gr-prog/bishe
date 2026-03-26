@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.AdminMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.zhjypt.pojo.Admin">
+        <id column="adm_id" property="admId" />
+        <result column="adm_name" property="admName" />
+        <result column="adm_account" property="admAccount" />
+        <result column="adm_password" property="admPassword" />
+        <result column="adm_phone" property="admPhone" />
+        <result column="adm_email" property="admEmail" />
+        <result column="adm_address" property="admAddress" />
+        <result column="del" property="del" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        adm_id, adm_name, adm_account, adm_password, adm_phone, adm_email, adm_address, del
+    </sql>
+
+</mapper>

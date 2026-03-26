@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/zhjypt?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      username: root
+      password: 123456
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+      file-size-threshold: 2KB
+
+  #  spring boot：2.7.6与swagger：2.9.2不兼容：Springfox使用的路径匹配是基于AntPathMatcher的，而Spring Boot 2.6.X使用的是PathPatternMatcher
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+      static-path-pattern: /**
+  jackson:
+#    JSON:请求响应格式化日期
+    date-format: yyyy-MM-dd
+    time-zone: GMT+8
+#配置映射文件路径
+mybatis-plus:
+  global-config:
+    db-config:
+      # 逻辑删除字段名（默认值：deleted，若你的字段名一致可省略该配置）
+      logic-delete-field: del
+      # 逻辑未删除值（默认：0，可自定义，如"false"、"N"）
+      logic-not-delete-value: 0
+      # 逻辑已删除值（默认：1，可自定义，如"true"、"Y"）
+      logic-delete-value: 1
+  mapper-locations: classpath:mapper/*Mapper.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名转换，确保Map类型也能正确处理别名
+    map-underscore-to-camel-case: true
+  # 配置当前项目的实体/VO包路径，便于在 XML 中使用类型别名
+  type-aliases-package: com.example.zhjypt.pojo,com.example.zhjypt.vo
+#常用的全局配置：项目的访问路径(虚拟目录)、端口号等
+server:
+  servlet:
+    context-path: /
+  port: 9999

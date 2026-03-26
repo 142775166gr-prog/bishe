@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.StudentExamRecordMapper">
+
+    <!-- 获取学生某个考试的所有记录 -->
+    <select id="selectRecordsByStudentAndExam" resultType="com.example.zhjypt.pojo.StudentExamRecord">
+        SELECT * FROM student_exam_record 
+        WHERE student_id = #{studentId} AND exam_id = #{examId}
+        ORDER BY attempt_number DESC
+    </select>
+
+    <!-- 获取学生最新的考试记录 -->
+    <select id="selectLatestRecord" resultType="com.example.zhjypt.pojo.StudentExamRecord">
+        SELECT * FROM student_exam_record 
+        WHERE student_id = #{studentId} AND exam_id = #{examId}
+        ORDER BY attempt_number DESC 
+        LIMIT 1
+    </select>
+
+    <!-- 获取学生考试次数 -->
+    <select id="countAttempts" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM student_exam_record 
+        WHERE student_id = #{studentId} AND exam_id = #{examId}
+    </select>
+
+    <!-- 获取需要批改的考试记录（包含主观题信息） -->
+    <select id="selectRecordsForGrading" resultType="java.util.Map">
+        SELECT 
+            ser.record_id as recordId,
+            ser.student_id as studentId,
+            s.stu_name as studentName,
+            ser.exam_id as examId,
+            e.exam_title as examTitle,
+            ser.start_time as startTime,
+            DATE_FORMAT(ser.submit_time, '%Y-%m-%d %H:%i:%s') as submitTime,
+            ser.total_score as totalScore,
+            ser.student_score as studentScore,
+            ser.pass_status as passStatus,
+            ser.exam_status as examStatus,
+            ser.attempt_number as attemptNumber,
+            ser.time_used as timeUsed,
+            ser.create_time as createTime,
+            (SELECT COUNT(*) FROM student_answer sa WHERE sa.record_id = ser.record_id) as totalAnswers,
+            (SELECT COUNT(*) FROM student_answer sa 
+             INNER JOIN question q ON sa.question_id = q.question_id 
+             WHERE sa.record_id = ser.record_id AND q.question_type > 3) as subjectiveCount,
+            (SELECT COUNT(*) FROM student_answer sa 
+             INNER JOIN question q ON sa.question_id = q.question_id 
+             WHERE sa.record_id = ser.record_id AND q.question_type > 3 AND sa.student_score IS NULL) as ungradedCount
+        FROM student_exam_record ser
+        INNER JOIN student s ON ser.student_id = s.stu_id
+        INNER JOIN exam e ON ser.exam_id = e.exam_id
+        WHERE e.course_id = #{courseId}
+        AND ser.exam_status IN (1, 2)
+        ORDER BY ser.submit_time DESC
+    </select>
+
+</mapper>

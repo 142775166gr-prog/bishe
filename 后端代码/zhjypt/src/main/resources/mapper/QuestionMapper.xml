@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.QuestionMapper">
+
+    <!-- 根据课程ID获取题目列表 -->
+    <select id="selectQuestionsByCourseId" resultType="com.example.zhjypt.pojo.Question">
+        SELECT * FROM question 
+        WHERE course_id = #{courseId} AND del = 0 
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 根据考试ID获取题目列表（包含选项） -->
+    <select id="selectQuestionsByExamId" resultMap="QuestionWithOptionsMap">
+        SELECT 
+            q.question_id,
+            q.course_id,
+            q.question_type,
+            q.question_content,
+            q.question_image,
+            q.correct_answer,
+            q.question_analysis,
+            q.difficulty_level,
+            eq.question_score,
+            q.create_time,
+            q.update_time,
+            q.del,
+            o.option_id,
+            o.option_label,
+            o.option_content,
+            o.option_image,
+            o.is_correct,
+            o.sort_order
+        FROM exam_question eq
+        INNER JOIN question q ON eq.question_id = q.question_id
+        LEFT JOIN question_option o ON q.question_id = o.question_id
+        WHERE eq.exam_id = #{examId} AND q.del = 0
+        ORDER BY eq.sort_order, o.sort_order
+    </select>
+
+    <!-- 获取题目详情（包含选项） -->
+    <select id="selectQuestionWithOptions" resultMap="QuestionWithOptionsMap">
+        SELECT 
+            q.question_id,
+            q.course_id,
+            q.question_type,
+            q.question_content,
+            q.question_image,
+            q.correct_answer,
+            q.question_analysis,
+            q.difficulty_level,
+            q.question_score,
+            q.create_time,
+            q.update_time,
+            q.del,
+            o.option_id,
+            o.option_label,
+            o.option_content,
+            o.option_image,
+            o.is_correct,
+            o.sort_order
+        FROM question q
+        LEFT JOIN question_option o ON q.question_id = o.question_id
+        WHERE q.question_id = #{questionId} AND q.del = 0
+        ORDER BY o.sort_order
+    </select>
+
+    <!-- 结果映射：题目包含选项 -->
+    <resultMap id="QuestionWithOptionsMap" type="com.example.zhjypt.pojo.Question">
+        <id property="questionId" column="question_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="questionType" column="question_type"/>
+        <result property="questionContent" column="question_content"/>
+        <result property="questionImage" column="question_image"/>
+        <result property="correctAnswer" column="correct_answer"/>
+        <result property="questionAnalysis" column="question_analysis"/>
+        <result property="difficultyLevel" column="difficulty_level"/>
+        <result property="questionScore" column="question_score"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="del" column="del"/>
+        <collection property="options" ofType="com.example.zhjypt.pojo.QuestionOption">
+            <id property="optionId" column="option_id"/>
+            <result property="questionId" column="question_id"/>
+            <result property="optionLabel" column="option_label"/>
+            <result property="optionContent" column="option_content"/>
+            <result property="optionImage" column="option_image"/>
+            <result property="isCorrect" column="is_correct"/>
+            <result property="sortOrder" column="sort_order"/>
+        </collection>
+    </resultMap>
+
+</mapper>

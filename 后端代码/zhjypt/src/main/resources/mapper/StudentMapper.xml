@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.StudentMapper">
+
+    <!--
+      学生表基础映射配置
+      对应表：student
+      仅保留与当前表结构和 Student 实体一致的字段，避免无效列导致 SQL 报错
+    -->
+    <resultMap id="BaseResultMap" type="com.example.zhjypt.pojo.Student">
+        <id column="stu_id" property="stuId" />
+        <result column="stu_name" property="stuName" />
+        <result column="stu_account" property="stuAccount" />
+        <result column="stu_password" property="stuPassword" />
+        <result column="stu_phone" property="stuPhone" />
+        <result column="stu_email" property="stuEmail" />
+        <result column="stu_university" property="stuUniversity" />
+        <!-- 头像字段，使用独立脚本 add_avatar_field.sql 新增 -->
+        <result column="avatar" property="avatar" />
+        <result column="del" property="del" />
+    </resultMap>
+
+    <!-- 通用查询结果列（与 student 表字段严格对应） -->
+    <sql id="Base_Column_List">
+        stu_id, stu_name, stu_account, stu_password, stu_phone, stu_email,
+        stu_university, avatar, del
+    </sql>
+
+</mapper>

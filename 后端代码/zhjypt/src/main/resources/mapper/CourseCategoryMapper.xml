@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.CourseCategoryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.zhjypt.pojo.CourseCategory">
+        <id column="category_id" property="categoryId" />
+        <result column="category_name" property="categoryName" />
+        <result column="category_desc" property="categoryDesc" />
+        <result column="sort_order" property="sortOrder" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="del" property="del" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        category_id, category_name, category_desc, sort_order, status, create_time, del
+    </sql>
+
+</mapper>

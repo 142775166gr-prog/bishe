@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.CourseChapterMapper">
+
+    <!-- 根据课程ID获取章节列表 -->
+    <select id="getChaptersByCourseId" resultType="com.example.zhjypt.pojo.CourseChapter">
+        SELECT * FROM course_chapter 
+        WHERE course_id = #{courseId} AND del = 0 
+        ORDER BY sort_order ASC, create_time ASC
+    </select>
+
+    <!-- 获取课程章节数量 -->
+    <select id="getChapterCountByCourseId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM course_chapter 
+        WHERE course_id = #{courseId} AND del = 0
+    </select>
+
+    <!-- 更新章节排序 -->
+    <update id="updateChapterSort">
+        UPDATE course_chapter 
+        SET sort_order = #{sortOrder}, update_time = NOW() 
+        WHERE chapter_id = #{chapterId}
+    </update>
+
+</mapper>

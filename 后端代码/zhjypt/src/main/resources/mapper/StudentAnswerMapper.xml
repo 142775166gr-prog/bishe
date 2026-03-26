@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.zhjypt.mapper.StudentAnswerMapper">
+
+    <!-- 根据考试记录ID获取学生答案（包含题目信息） -->
+    <!-- 修改：显示该考试的所有题目，即使学生没有作答 -->
+    <select id="selectAnswersByRecordId" resultType="java.util.Map">
+        SELECT 
+            sa.answer_id,
+            #{recordId} as record_id,
+            q.question_id,
+            sa.student_answer,
+            sa.is_correct,
+            q.question_score,
+            sa.student_score,
+            sa.answer_time,
+            q.question_content,
+            q.question_type,
+            q.correct_answer AS standard_answer,
+            q.question_analysis
+        FROM student_exam_record ser
+        JOIN exam e ON ser.exam_id = e.exam_id
+        JOIN exam_question eq ON e.exam_id = eq.exam_id
+        JOIN question q ON eq.question_id = q.question_id
+        LEFT JOIN student_answer sa ON sa.record_id = ser.record_id AND sa.question_id = q.question_id
+        WHERE ser.record_id = #{recordId}
+        ORDER BY q.question_id
+    </select>
+
+</mapper>

@@ -1,0 +1,332 @@
+智慧教育平台数据库数据字典
+
+日期：2026-03-18
+
+1. 管理员表 (admin)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| adm_id | int | 11 | 否 | AUTO_INCREMENT | 管理员ID | 主键 | | |
+| adm_name | varchar | 255 | 否 | | 管理员名称 | | | |
+| adm_account | varchar | 255 | 否 | | 管理员账户 | | | |
+| adm_password | varchar | 255 | 否 | | 管理员密码 | | | |
+| adm_phone | varchar | 255 | 否 | | 管理员电话 | | | |
+| adm_email | varchar | 255 | 否 | | 管理员邮箱 | | | |
+| adm_address | varchar | 255 | 否 | | 管理员地址 | | | |
+| avatar | varchar | 500 | 是 | NULL | 头像URL | | | |
+| del | int | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+2. 公告表 (announcement)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| announcement_id | int | 11 | 否 | AUTO_INCREMENT | 公告ID | 主键 | | |
+| title | varchar | 200 | 否 | | 公告标题 | | | |
+| content | text | 65535 | 否 | | 公告内容 | | | |
+| publisher_id | int | 11 | 否 | | 发布人ID | | | idx_publisher_id |
+| publisher_name | varchar | 50 | 否 | | 发布人姓名 | | | |
+| publish_time | datetime | 19 | 否 | | 发布时间 | | | idx_publish_time |
+| status | tinyint(1) | 1 | 否 | 1 | 是否启用，0禁用，1启用 | | | idx_status_del |
+| del | tinyint(1) | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | idx_status_del |
+
+3. 公告阅读记录表 (announcement_read)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| read_id | int | 11 | 否 | AUTO_INCREMENT | 记录ID | 主键 | | |
+| announcement_id | int | 11 | 否 | | 公告ID | | | idx_announcement_id |
+| user_id | int | 11 | 否 | | 用户ID | | | idx_user |
+| user_type | varchar | 20 | 否 | | 用户类型：admin/teacher/student | | | idx_user |
+| read_time | datetime | 19 | 否 | | 阅读时间 | | | |
+
+4. 章节内容表 (chapter_content)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| content_id | int | 11 | 否 | AUTO_INCREMENT | 内容ID | 主键 | | |
+| chapter_id | int | 11 | 否 | | 章节ID | 外键 | fk_content_chapter | idx_chapter_id |
+| content_title | varchar | 200 | 否 | | 内容标题 | | | |
+| content_type | tinyint(1) | 1 | 否 | | 内容类型：1视频，2文档，3音频，4图片 | | | |
+| content_url | varchar | 500 | 否 | | 内容URL | | | |
+| duration | int | 11 | 是 | NULL | 内容时长（秒） | | | |
+| file_size | bigint | 20 | 是 | NULL | 文件大小（字节） | | | |
+| content_desc | text | 65535 | 是 | NULL | 内容描述 | | | |
+| sort_order | int | 11 | 是 | 1 | 排序顺序 | | | idx_sort_order |
+| progress_weight | int | 11 | 否 | 1 | 进度权重（用于计算课程总进度） | | | |
+| content_status | tinyint(1) | 1 | 是 | 0 | 内容状态：0草稿，1发布 | | | |
+| create_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 创建时间 | | | |
+| update_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 更新时间 | | | |
+| del | tinyint(1) | 1 | 是 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+5. 在线咨询表 (consultation)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| consultation_id | int | 11 | 否 | AUTO_INCREMENT | 咨询ID | 主键 | | |
+| student_id | int | 11 | 否 | | 学生ID | | | idx_student_id |
+| student_name | varchar | 50 | 否 | | 学生姓名 | | | |
+| teacher_id | int | 11 | 否 | | 教师ID | | | idx_teacher_id |
+| teacher_name | varchar | 50 | 否 | | 教师姓名 | | | |
+| course_id | int | 11 | 是 | NULL | 课程ID | | | idx_course_id |
+| course_title | varchar | 200 | 是 | NULL | 课程标题 | | | |
+| question_title | varchar | 200 | 否 | | 问题标题 | | | |
+| question_content | text | 65535 | 否 | | 问题详细描述 | | | |
+| question_image | varchar | 500 | 是 | NULL | 问题图片URL | | | |
+| reply_content | text | 65535 | 是 | NULL | 教师回复内容 | | | |
+| reply_time | datetime | 19 | 是 | NULL | 回复时间 | | | |
+| status | tinyint | 1 | 否 | 0 | 状态：0待回复，1已回复，2已关闭 | | | idx_status |
+| priority | tinyint | 1 | 否 | 0 | 优先级：0普通，1紧急 | | | |
+| is_read | tinyint | 1 | 否 | 0 | 学生是否已读回复：0未读，1已读 | | | |
+| create_time | datetime | 19 | 否 | CURRENT_TIMESTAMP | 创建时间 | | | idx_create_time |
+| update_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 更新时间 | | | |
+| del | tinyint | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+6. 课程表 (course)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| course_id | int | 11 | 否 | AUTO_INCREMENT | 课程ID | 主键 | | |
+| course_title | varchar | 200 | 否 | | 课程标题 | | | |
+| course_desc | text | 65535 | 是 | NULL | 课程描述 | | | |
+| course_cover | varchar | 500 | 是 | NULL | 课程封面图片URL | | | |
+| category_id | int | 11 | 否 | | 课程分类ID | | | idx_category_id |
+| teacher_id | int | 11 | 否 | | 授课教师ID | 外键 | fk_course_teacher | idx_teacher_id |
+| course_duration | int | 11 | 是 | 0 | 课程时长（分钟） | | | |
+| student_count | int | 11 | 是 | 0 | 学生数量 | | | |
+| course_status | tinyint(1) | 1 | 否 | 0 | 课程状态：0草稿，1发布，2下架 | | | idx_status_del |
+| difficulty_level | tinyint(1) | 1 | 是 | 1 | 难度等级：1初级，2中级，3高级 | | | |
+| create_time | datetime | 19 | 否 | | 创建时间 | | | idx_create_time |
+| update_time | datetime | 19 | 是 | NULL | 更新时间 | | | |
+| publish_time | datetime | 19 | 是 | NULL | 发布时间 | | | |
+| del | tinyint(1) | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | idx_status_del |
+
+7. 课程分类表 (course_category)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| category_id | int | 11 | 否 | AUTO_INCREMENT | 分类ID | 主键 | | |
+| category_name | varchar | 50 | 否 | | 分类名称 | | | |
+| category_desc | varchar | 200 | 是 | NULL | 分类描述 | | | |
+| sort_order | int | 11 | 是 | 0 | 排序顺序 | | | |
+| status | tinyint(1) | 1 | 否 | 1 | 状态，0禁用，1启用 | | | idx_status_del |
+| create_time | datetime | 19 | 否 | | 创建时间 | | | |
+| del | tinyint(1) | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | idx_status_del |
+
+8. 课程分类备份表 (course_category_backup)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| category_id | int | 11 | 否 | 0 | 分类ID | | | |
+| category_name | varchar | 50 | 否 | | 分类名称 | | | |
+| category_desc | varchar | 200 | 是 | NULL | 分类描述 | | | |
+| sort_order | int | 11 | 是 | 0 | 排序顺序 | | | |
+| status | tinyint(1) | 1 | 否 | 1 | 状态，0禁用，1启用 | | | |
+| create_time | datetime | 19 | 否 | | 创建时间 | | | |
+| del | tinyint(1) | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+9. 课程章节表 (course_chapter)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| chapter_id | int | 11 | 否 | AUTO_INCREMENT | 章节ID | 主键 | | |
+| course_id | int | 11 | 否 | | 课程ID | 外键 | fk_chapter_course | idx_course_id |
+| chapter_title | varchar | 200 | 否 | | 章节标题 | | | |
+| chapter_desc | text | 65535 | 是 | NULL | 章节描述 | | | |
+| sort_order | int | 11 | 是 | 1 | 章节排序 | | | idx_sort_order |
+| chapter_status | tinyint(1) | 1 | 是 | 0 | 章节状态：0草稿，1发布 | | | |
+| create_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 创建时间 | | | |
+| update_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 更新时间 | | | |
+| del | tinyint(1) | 1 | 是 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+10. 课程评论表 (course_comment)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| comment_id | int | 11 | 否 | AUTO_INCREMENT | 评论ID | 主键 | | |
+| course_id | int | 11 | 否 | | 课程ID | | | idx_course_id |
+| parent_id | int | 11 | 否 | 0 | 父评论ID，0表示顶级评论 | | | idx_parent_id |
+| reply_to_id | int | 11 | 否 | 0 | 被回复的评论ID，0表示不是回复 | | | |
+| user_id | int | 11 | 否 | | 评论用户ID | | | idx_user |
+| user_type | varchar | 20 | 否 | | 用户类型：student学生，teacher教师 | | | idx_user |
+| user_name | varchar | 50 | 否 | | 用户姓名 | | | |
+| content | text | 65535 | 否 | | 评论内容 | | | |
+| reply_to_name | varchar | 50 | 是 | NULL | 被回复用户的姓名 | | | |
+| create_time | datetime | 19 | 否 | CURRENT_TIMESTAMP | 创建时间 | | | |
+| del | int | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+| is_read | tinyint(1) | 1 | 否 | 1 | 是否已读，0未读，1已读 | | | |
+
+11. 课程考试关联表 (course_exam)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| course_exam_id | int | 11 | 否 | AUTO_INCREMENT | 课程习题试卷ID | 主键 | | |
+| del | int | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+12. 教育建议表 (education_suggestion)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| suggestion_id | int | 11 | 否 | AUTO_INCREMENT | 建议ID | 主键 | | |
+| teacher_id | int | 11 | 否 | | 教师ID | | | idx_teacher_id |
+| teacher_name | varchar | 50 | 否 | | 教师姓名 | | | |
+| student_id | int | 11 | 否 | | 学生ID | | | idx_student_id |
+| student_name | varchar | 50 | 否 | | 学生姓名 | | | |
+| course_id | int | 11 | 是 | NULL | 课程ID | | | idx_course_id |
+| course_title | varchar | 200 | 是 | NULL | 课程标题 | | | |
+| suggestion_type | tinyint | 1 | 否 | 1 | 建议类型：1学习方法，2课程推荐，3学习计划，4其他 | | | |
+| suggestion_title | varchar | 200 | 否 | | 建议标题 | | | |
+| suggestion_content | text | 65535 | 否 | | 建议内容 | | | |
+| is_read | tinyint | 1 | 否 | 0 | 是否已读：0未读，1已读 | | | |
+| is_favorite | tinyint | 1 | 否 | 0 | 是否收藏：0未收藏，1已收藏 | | | |
+| create_time | datetime | 19 | 否 | CURRENT_TIMESTAMP | 创建时间 | | | idx_create_time |
+| read_time | datetime | 19 | 是 | NULL | 阅读时间 | | | |
+| del | tinyint | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+13. 考试表 (exam)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| exam_id | int | 11 | 否 | AUTO_INCREMENT | 考试ID | 主键 | | |
+| course_id | int | 11 | 否 | | 课程ID | 外键 | fk_exam_course | idx_course_id |
+| exam_title | varchar | 200 | 否 | | 考试标题 | | | |
+| exam_desc | text | 65535 | 是 | NULL | 考试描述 | | | |
+| exam_type | tinyint | 1 | 否 | 1 | 考试类型：1练习，2考试 | | | |
+| total_score | int | 11 | 否 | 100 | 总分 | | | |
+| pass_score | int | 11 | 否 | 60 | 及格分数 | | | |
+| time_limit | int | 11 | 是 | NULL | 考试时长（分钟），NULL表示不限时 | | | |
+| attempt_limit | int | 11 | 是 | NULL | 允许考试次数，NULL表示不限次数 | | | |
+| start_time | datetime | 19 | 是 | NULL | 开始时间，NULL表示随时可考 | | | |
+| end_time | datetime | 19 | 是 | NULL | 结束时间，NULL表示无截止时间 | | | |
+| show_result | tinyint | 1 | 否 | 1 | 是否显示结果：0否，1是 | | | |
+| show_answer | tinyint | 1 | 否 | 1 | 是否显示答案：0否，1是 | | | |
+| random_order | tinyint | 1 | 否 | 0 | 是否随机题目顺序：0否，1是 | | | |
+| exam_status | tinyint | 1 | 否 | 0 | 状态：0草稿，1发布 | | | idx_exam_status |
+| create_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 创建时间 | | | |
+| update_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 更新时间 | | | |
+| del | tinyint | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+14. 考试题目关联表 (exam_question)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| id | int | 11 | 否 | AUTO_INCREMENT | 记录ID | 主键 | | |
+| exam_id | int | 11 | 否 | | 考试ID | 外键 | fk_exam_question_exam | idx_exam_id |
+| question_id | int | 11 | 否 | | 题目ID | 外键 | fk_exam_question_question | idx_question_id |
+| question_score | int | 11 | 否 | | 题目在此考试中的分值 | | | |
+| sort_order | int | 11 | 否 | 1 | 题目顺序 | | | |
+
+15. 题目表 (question)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| question_id | int | 11 | 否 | AUTO_INCREMENT | 题目ID | 主键 | | |
+| course_id | int | 11 | 否 | | 课程ID | 外键 | fk_question_course | idx_course_id |
+| question_type | tinyint | 1 | 否 | | 题目类型：1单选，2多选，3判断，4填空，5简答 | | | idx_question_type |
+| question_content | text | 65535 | 否 | | 题目内容 | | | |
+| question_image | varchar | 500 | 是 | NULL | 题目图片URL | | | |
+| correct_answer | text | 65535 | 是 | NULL | 正确答案（JSON格式） | | | |
+| question_analysis | text | 65535 | 是 | NULL | 题目解析 | | | |
+| difficulty_level | tinyint | 1 | 否 | 1 | 难度等级：1简单，2中等，3困难 | | | |
+| question_score | int | 11 | 否 | 5 | 题目分值 | | | |
+| create_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 创建时间 | | | |
+| update_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 更新时间 | | | |
+| del | tinyint | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+16. 选择题选项表 (question_option)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| option_id | int | 11 | 否 | AUTO_INCREMENT | 选项ID | 主键 | | |
+| question_id | int | 11 | 否 | | 题目ID | 外键 | fk_option_question | idx_question_id |
+| option_label | varchar | 10 | 否 | | 选项标签（A、B、C、D） | | | |
+| option_content | text | 65535 | 否 | | 选项内容 | | | |
+| option_image | varchar | 500 | 是 | NULL | 选项图片URL | | | |
+| is_correct | tinyint | 1 | 否 | 0 | 是否正确答案：0否，1是 | | | |
+| sort_order | int | 11 | 否 | 1 | 排序 | | | |
+
+17. 学生表 (student)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| stu_id | int | 11 | 否 | AUTO_INCREMENT | 学生ID | 主键 | | |
+| stu_name | varchar | 255 | 否 | | 学生名称 | | | |
+| stu_account | varchar | 255 | 否 | | 学生账户 | | | uk_student_account |
+| stu_password | varchar | 255 | 否 | | 学生密码 | | | |
+| stu_phone | varchar | 255 | 否 | | 学生电话 | | | |
+| stu_email | varchar | 255 | 否 | | 学生邮箱 | | | |
+| stu_university | varchar | 255 | 否 | | 学生大学 | | | |
+| avatar | varchar | 500 | 是 | NULL | 头像URL | | | |
+| del | int | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
+
+18. 学生答案表 (student_answer)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| answer_id | int | 11 | 否 | AUTO_INCREMENT | 答题记录ID | 主键 | | |
+| record_id | int | 11 | 否 | | 考试记录ID | 外键 | fk_answer_record | idx_record_id |
+| question_id | int | 11 | 否 | | 题目ID | 外键 | fk_answer_question | idx_question_id |
+| student_answer | text | 65535 | 是 | NULL | 学生答案（JSON格式） | | | |
+| is_correct | tinyint | 1 | 是 | NULL | 是否正确：0错误，1正确，NULL未评分 | | | |
+| question_score | int | 11 | 否 | | 题目分值 | | | |
+| student_score | decimal(5,2) | 5 | 是 | NULL | 学生得分 | | | |
+| answer_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 答题时间 | | | |
+
+19. 学生内容学习进度表 (student_content_progress)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| id | int | 11 | 否 | AUTO_INCREMENT | 记录ID | 主键 | | |
+| student_id | int | 11 | 否 | | 学生ID | | | idx_student_course |
+| course_id | int | 11 | 否 | | 课程ID | | | idx_student_course |
+| chapter_id | int | 11 | 否 | | 章节ID | | | idx_chapter |
+| content_id | int | 11 | 否 | | 内容ID | | | idx_content |
+| is_completed | tinyint | 1 | 否 | 0 | 是否完成：0未完成，1已完成 | | | |
+| watch_progress | int | 11 | 否 | 0 | 观看进度百分比（0-100） | | | |
+| first_study_time | datetime | 19 | 是 | NULL | 首次学习时间 | | | |
+| completed_time | datetime | 19 | 是 | NULL | 完成时间 | | | |
+| update_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 最后更新时间 | | | |
+
+20. 学生课程表 (student_course)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| id | int | 11 | 否 | AUTO_INCREMENT | 记录ID | 主键 | | |
+| student_id | int | 11 | 否 | | 学生ID | | | uk_student_course, idx_student_id |
+| course_id | int | 11 | 否 | | 课程ID | | | uk_student_course, idx_course_id |
+| enroll_time | datetime | 19 | 否 | | 选课时间 | | | |
+| progress | decimal(5,2) | 5 | 是 | 0.00 | 学习进度百分比 | | | |
+| completed_contents | text | 65535 | 是 | NULL | 已完成的内容ID列表（JSON格式） | | | |
+| last_study_time | datetime | 19 | 是 | NULL | 最后学习时间 | | | |
+| status | tinyint(1) | 1 | 是 | 1 | 状态：0退课，1正常 | | | |
+
+21. 学生考试记录表 (student_exam_record)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| record_id | int | 11 | 否 | AUTO_INCREMENT | 记录ID | 主键 | | |
+| student_id | int | 11 | 否 | | 学生ID | 外键 | fk_record_student | idx_student_exam |
+| exam_id | int | 11 | 否 | | 考试ID | 外键 | fk_record_exam | idx_student_exam, idx_exam_id |
+| start_time | datetime | 19 | 否 | | 开始时间 | | | |
+| submit_time | datetime | 19 | 是 | NULL | 提交时间 | | | |
+| total_score | int | 11 | 否 | | 总分 | | | |
+| student_score | decimal(5,2) | 5 | 是 | NULL | 学生得分 | | | |
+| pass_status | tinyint | 1 | 是 | NULL | 通过状态：0未通过，1通过 | | | |
+| exam_status | tinyint | 1 | 否 | 0 | 考试状态：0进行中，1已提交，2已评分 | | | |
+| attempt_number | int | 11 | 否 | 1 | 考试次数 | | | |
+| time_used | int | 11 | 是 | NULL | 用时（分钟） | | | |
+| create_time | datetime | 19 | 是 | CURRENT_TIMESTAMP | 创建时间 | | | |
+
+22. 教师表 (teacher)
+
+| 字段名 | 数据类型 | 长度 | 是否为空 | 默认值 | 字段说明 | 主键 | 外键 | 索引 |
+|-------|---------|------|---------|--------|---------|------|------|------|
+| teach_id | int | 11 | 否 | AUTO_INCREMENT | 教师ID | 主键 | | |
+| teach_name | varchar | 255 | 否 | | 教师名称 | | | |
+| teach_account | varchar | 255 | 否 | | 教师账户 | | | |
+| teach_password | varchar | 255 | 否 | | 教师密码 | | | |
+| teach_phone | varchar | 255 | 否 | | 教师电话 | | | |
+| teach_email | varchar | 255 | 否 | | 教师邮箱 | | | |
+| teach_address | varchar | 255 | 否 | | 教师地址 | | | |
+| teach_subject | varchar | 255 | 是 | NULL | 教学科目 | | | |
+| avatar | varchar | 500 | 是 | NULL | 头像URL | | | |
+| del | int | 1 | 否 | 0 | 逻辑删除，0未删除，1已删除 | | | |
