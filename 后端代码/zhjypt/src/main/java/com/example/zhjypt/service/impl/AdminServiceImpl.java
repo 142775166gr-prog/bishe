@@ -11,6 +11,7 @@ import com.example.zhjypt.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.zhjypt.utils.PasswordUtil;
+import com.example.zhjypt.security.JwtUtil;
 
 import java.util.List;
 
@@ -26,6 +27,9 @@ import java.util.List;
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements AdminService {
     @Autowired
     private AdminMapper adminMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public ResultVO<Admin> AdminLogin(Admin admin) {
@@ -49,6 +53,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
                     upgradeWrapper.set("adm_password", PasswordUtil.hashIfNeeded(admin.getAdmPassword()));
                     this.update(null, upgradeWrapper);
                 }
+                currentAdmin.setToken(jwtUtil.generateToken("admin", currentAdmin.getAdmId()));
                 return ResultVO.success("登录成功", currentAdmin);
             } else {
                 return ResultVO.fail("密码错误");

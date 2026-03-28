@@ -308,7 +308,7 @@ export default {
           currentRecordId.value = recordRes.result.recordId
           console.log('创建考试记录成功，recordId:', currentRecordId.value)
         } else {
-          ElMessage.error('创建考试记录失败')
+          ElMessage.error(recordRes?.reason || '创建考试记录失败')
           return
         }
       } catch (e) {

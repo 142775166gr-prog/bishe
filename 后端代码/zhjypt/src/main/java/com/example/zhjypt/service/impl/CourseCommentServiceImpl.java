@@ -12,6 +12,7 @@ import com.example.zhjypt.pojo.Teacher;
 import com.example.zhjypt.service.CourseCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -126,6 +127,7 @@ public class CourseCommentServiceImpl extends ServiceImpl<CourseCommentMapper, C
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteComment(Integer commentId, Integer userId, String userType) {
         // 验证是否是评论的作者
         CourseComment comment = this.getById(commentId);
@@ -153,6 +155,7 @@ public class CourseCommentServiceImpl extends ServiceImpl<CourseCommentMapper, C
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean adminDeleteComment(Integer commentId) {
         CourseComment comment = this.getById(commentId);
         if (comment == null) {

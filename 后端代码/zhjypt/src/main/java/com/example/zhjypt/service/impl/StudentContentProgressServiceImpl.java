@@ -8,6 +8,7 @@ import com.example.zhjypt.service.StudentContentProgressService;
 import com.example.zhjypt.service.StudentCourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -30,6 +31,7 @@ public class StudentContentProgressServiceImpl extends ServiceImpl<StudentConten
     private StudentCourseService studentCourseService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateProgress(Integer studentId, Integer courseId, Integer chapterId, 
                                  Integer contentId, Integer watchProgress) {
         // 查找现有记录
@@ -97,7 +99,9 @@ public class StudentContentProgressServiceImpl extends ServiceImpl<StudentConten
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean markCompleted(Integer studentId, Integer courseId, Integer chapterId, Integer contentId) {
+        // 自调用不会走代理，此处单独加事务，保证与 updateProgress 内多步写库一致
         return updateProgress(studentId, courseId, chapterId, contentId, 100);
     }
 

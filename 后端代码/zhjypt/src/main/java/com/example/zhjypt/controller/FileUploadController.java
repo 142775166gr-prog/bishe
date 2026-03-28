@@ -30,6 +30,20 @@ public class FileUploadController {
 
     // 上传目录
     private static final String UPLOAD_DIR = "uploads/";
+
+    /**
+     * 从原始文件名解析扩展名（含点，小写）。无文件名、无扩展名时返回 null，避免 substring(-1) 导致 500。
+     */
+    private String safeExtension(String originalFilename) {
+        if (originalFilename == null || originalFilename.trim().isEmpty()) {
+            return null;
+        }
+        int dotIndex = originalFilename.lastIndexOf(".");
+        if (dotIndex == -1) {
+            return null;
+        }
+        return originalFilename.substring(dotIndex).toLowerCase();
+    }
     
     @ApiOperation("上传视频文件")
     @PostMapping("/video")
@@ -42,7 +56,13 @@ public class FileUploadController {
             // 检查文件类型
             String contentType = file.getContentType();
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+            String extension = safeExtension(originalFilename);
+            if (extension == null) {
+                return ResultVO.fail(
+                        originalFilename == null || originalFilename.trim().isEmpty()
+                                ? "无法获取文件名"
+                                : "文件缺少扩展名");
+            }
             
             if (!isVideoFile(contentType, extension)) {
                 return ResultVO.fail("只能上传视频文件（mp4, avi, mov, wmv, flv, mkv）");
@@ -95,7 +115,13 @@ public class FileUploadController {
         try {
             // 检查文件类型
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+            String extension = safeExtension(originalFilename);
+            if (extension == null) {
+                return ResultVO.fail(
+                        originalFilename == null || originalFilename.trim().isEmpty()
+                                ? "无法获取文件名"
+                                : "文件缺少扩展名");
+            }
             
             if (!extension.matches("\\.(pdf|doc|docx|ppt|pptx|txt)$")) {
                 return ResultVO.fail("只能上传PDF、Word、PowerPoint或文本文件");
@@ -145,7 +171,13 @@ public class FileUploadController {
             // 检查文件类型
             String contentType = file.getContentType();
             String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+            String extension = safeExtension(originalFilename);
+            if (extension == null) {
+                return ResultVO.fail(
+                        originalFilename == null || originalFilename.trim().isEmpty()
+                                ? "无法获取文件名"
+                                : "文件缺少扩展名");
+            }
             
             if (!isImageFile(contentType, extension)) {
                 return ResultVO.fail("只能上传图片文件（jpg, jpeg, png, gif, bmp）");

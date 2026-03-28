@@ -3,6 +3,7 @@ package com.example.zhjypt.controller;
 import com.example.zhjypt.pojo.CourseComment;
 import com.example.zhjypt.service.CourseCommentService;
 import com.example.zhjypt.vo.ResultVO;
+import com.example.zhjypt.security.JwtContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,20 @@ public class CourseCommentController {
     @Autowired
     private CourseCommentService courseCommentService;
 
+    private boolean isLoginStudentOrTeacher() {
+        return JwtContext.getCurrentUser() != null
+                && ("student".equals(JwtContext.getCurrentUser().getRole())
+                || "teacher".equals(JwtContext.getCurrentUser().getRole()));
+    }
+
+    private Integer currentUid() {
+        return JwtContext.getCurrentUser() == null ? null : JwtContext.getCurrentUser().getUid();
+    }
+
+    private String currentRole() {
+        return JwtContext.getCurrentUser() == null ? null : JwtContext.getCurrentUser().getRole();
+    }
+
     @ApiOperation("获取课程评论列表")
     @GetMapping("/list/{courseId}")
     public ResultVO getCommentList(@PathVariable Integer courseId) {
@@ -44,6 +59,12 @@ public class CourseCommentController {
     @PostMapping("/add")
     public ResultVO addComment(@RequestBody CourseComment comment) {
         try {
+            // 越权止血：强制使用 token 身份覆盖前端传入 userId/userType
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            comment.setUserId(currentUid());
+            comment.setUserType(currentRole());
             boolean success = courseCommentService.addComment(comment);
             if (success) {
                 return ResultVO.success("评论成功");
@@ -60,6 +81,12 @@ public class CourseCommentController {
     @PostMapping("/reply")
     public ResultVO replyComment(@RequestBody CourseComment comment) {
         try {
+            // 越权止血：强制使用 token 身份覆盖前端传入 userId/userType
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            comment.setUserId(currentUid());
+            comment.setUserType(currentRole());
             boolean success = courseCommentService.replyComment(comment);
             if (success) {
                 return ResultVO.success("回复成功");
@@ -79,7 +106,11 @@ public class CourseCommentController {
             @RequestParam Integer userId,
             @RequestParam String userType) {
         try {
-            boolean success = courseCommentService.deleteComment(commentId, userId, userType);
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            // 越权止血：忽略前端传入的 userId/userType
+            boolean success = courseCommentService.deleteComment(commentId, currentUid(), currentRole());
             if (success) {
                 return ResultVO.success("删除成功");
             } else {
@@ -123,7 +154,11 @@ public class CourseCommentController {
     @GetMapping("/unreadCount")
     public ResultVO getUnreadReplyCount(@RequestParam Integer userId, @RequestParam String userType) {
         try {
-            Integer count = courseCommentService.getUnreadReplyCount(userId, userType);
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            // 越权止血：忽略前端传入的 userId/userType
+            Integer count = courseCommentService.getUnreadReplyCount(currentUid(), currentRole());
             return ResultVO.success("查询成功", count);
         } catch (Exception e) {
             e.printStackTrace();
@@ -135,7 +170,11 @@ public class CourseCommentController {
     @GetMapping("/unreadList")
     public ResultVO getUnreadReplies(@RequestParam Integer userId, @RequestParam String userType) {
         try {
-            java.util.List<CourseComment> replies = courseCommentService.getUnreadReplies(userId, userType);
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            // 越权止血：忽略前端传入的 userId/userType
+            java.util.List<CourseComment> replies = courseCommentService.getUnreadReplies(currentUid(), currentRole());
             return ResultVO.success("查询成功", replies, replies.size());
         } catch (Exception e) {
             e.printStackTrace();
@@ -147,7 +186,11 @@ public class CourseCommentController {
     @GetMapping("/markRead")
     public ResultVO markAsRead(@RequestParam Integer commentId, @RequestParam Integer userId, @RequestParam String userType) {
         try {
-            boolean success = courseCommentService.markAsRead(commentId, userId, userType);
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            // 越权止血：忽略前端传入的 userId/userType
+            boolean success = courseCommentService.markAsRead(commentId, currentUid(), currentRole());
             if (success) {
                 return ResultVO.success("标记成功");
             } else {
@@ -163,7 +206,11 @@ public class CourseCommentController {
     @GetMapping("/markAllRead")
     public ResultVO markAllAsRead(@RequestParam Integer userId, @RequestParam String userType) {
         try {
-            boolean success = courseCommentService.markAllAsRead(userId, userType);
+            if (!isLoginStudentOrTeacher()) {
+                return ResultVO.fail("未授权");
+            }
+            // 越权止血：忽略前端传入的 userId/userType
+            boolean success = courseCommentService.markAllAsRead(currentUid(), currentRole());
             if (success) {
                 return ResultVO.success("标记成功");
             } else {

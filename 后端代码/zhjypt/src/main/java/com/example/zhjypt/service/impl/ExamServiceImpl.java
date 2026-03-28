@@ -11,6 +11,7 @@ import com.example.zhjypt.pojo.Exam;
 import com.example.zhjypt.pojo.StudentCourse;
 import com.example.zhjypt.pojo.StudentExamRecord;
 import com.example.zhjypt.service.ExamService;
+import com.example.zhjypt.service.StudentAnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,9 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
     
     @Autowired
     private StudentCourseMapper studentCourseMapper;
+
+    @Autowired
+    private StudentAnswerService studentAnswerService;
 
     @Override
     public List<Exam> getExamsByCourseId(Integer courseId) {
@@ -136,9 +140,18 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
     @Override
     public StudentExamRecord createExamRecord(Integer studentId, Integer examId, Integer totalScore) {
         try {
-            // 获取当前考试次数
+            Exam exam = getById(examId);
+            if (exam == null) {
+                return null;
+            }
+            // 获取当前已生成的考试记录条数（每次开始考试一条）；与 exam.attempt_limit 比对
             Integer attemptCount = getExamAttemptCount(studentId, examId);
-            
+            Integer limit = exam.getAttemptLimit();
+            if (limit != null && limit > 0 && attemptCount >= limit) {
+                throw new IllegalStateException(
+                        "已超过该考试允许的次数（最多 " + limit + " 次）");
+            }
+
             StudentExamRecord record = new StudentExamRecord();
             record.setStudentId(studentId);
             record.setExamId(examId);
@@ -156,6 +169,8 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
             int result = studentExamRecordMapper.insert(record);
             
             return result > 0 ? record : null;
+        } catch (IllegalStateException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -163,28 +178,19 @@ public class ExamServiceImpl extends ServiceImpl<ExamMapper, Exam> implements Ex
     }
 
     @Override
+    @SuppressWarnings("unused")
     public boolean submitExamRecord(Integer recordId, Integer timeUsed, Double studentScore) {
         try {
             StudentExamRecord record = studentExamRecordMapper.selectById(recordId);
-            if (record != null) {
-                record.setSubmitTime(new Date());
-                record.setTimeUsed(timeUsed);
-                if (studentScore != null) {
-                    record.setStudentScore(BigDecimal.valueOf(studentScore));
-                    // 判断是否通过（需要获取考试的及格分数）
-                    Exam exam = getById(record.getExamId());
-                    if (exam != null) {
-                        record.setPassStatus(studentScore >= exam.getPassScore() ? 1 : 0);
-                    }
-                    record.setExamStatus(2); // 已评分
-                } else {
-                    record.setExamStatus(1); // 已提交
-                }
-                
-                int result = studentExamRecordMapper.updateById(record);
-                return result > 0;
+            if (record == null) {
+                return false;
             }
-            return false;
+            // 仅持久化提交时间与用时；总分、是否通过必须由服务端根据题库与答题记录计算（忽略前端 studentScore）
+            record.setSubmitTime(new Date());
+            record.setTimeUsed(timeUsed);
+            studentExamRecordMapper.updateById(record);
+
+            return studentAnswerService.recalculateScoresFromServer(recordId);
         } catch (Exception e) {
             e.printStackTrace();
             return false;

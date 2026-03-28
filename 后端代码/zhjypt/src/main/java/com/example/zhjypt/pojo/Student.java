@@ -3,6 +3,7 @@ package com.example.zhjypt.pojo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -53,6 +54,13 @@ public class Student implements Serializable {
 
     @ApiModelProperty(value = "逻辑删除，0未删除，1已删除")
     private Integer del;
+
+    /**
+     * JWT token（仅用于登录返回与请求头携带，不落库）
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "JWT token")
+    private String token;
 
 
 }

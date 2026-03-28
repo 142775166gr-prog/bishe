@@ -11,6 +11,7 @@ import com.example.zhjypt.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.zhjypt.utils.PasswordUtil;
+import com.example.zhjypt.security.JwtUtil;
 
 import java.util.List;
 
@@ -26,6 +27,9 @@ import java.util.List;
 public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> implements TeacherService {
     @Autowired
     private TeacherMapper teacherMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public ResultVO<Teacher> AddTeacher(Teacher teacher) {
@@ -174,6 +178,7 @@ public class TeacherServiceImpl extends ServiceImpl<TeacherMapper, Teacher> impl
                     upgradeWrapper.set("teach_password", PasswordUtil.hashIfNeeded(teacher.getTeachPassword()));
                     this.update(null, upgradeWrapper);
                 }
+                current.setToken(jwtUtil.generateToken("teacher", current.getTeachId()));
                 return ResultVO.success("登录成功", current);
             } else {
                 return ResultVO.fail("密码错误");

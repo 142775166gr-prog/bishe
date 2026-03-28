@@ -35,4 +35,13 @@ public interface StudentAnswerService extends IService<StudentAnswer> {
      * 批改主观题
      */
     boolean gradeSubjectiveAnswers(Integer recordId, String gradingData);
+
+    /**
+     * 交卷时根据题库中的题目与 {@link com.example.zhjypt.pojo.StudentAnswer} 重新计算客观题得分并汇总；
+     * 主观题得分清空待教师批改。不可信任前端传入的总分。
+     *
+     * @param recordId 考试记录 ID
+     * @return 是否处理成功
+     */
+    boolean recalculateScoresFromServer(Integer recordId);
 }

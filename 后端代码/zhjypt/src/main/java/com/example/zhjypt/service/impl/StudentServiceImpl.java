@@ -11,6 +11,7 @@ import com.example.zhjypt.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.zhjypt.utils.PasswordUtil;
+import com.example.zhjypt.security.JwtUtil;
 
 import java.util.List;
 
@@ -26,6 +27,9 @@ import java.util.List;
 public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> implements StudentService {
     @Autowired
     private StudentMapper studentMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public ResultVO<Student> AddStudent(Student student) {
@@ -193,6 +197,8 @@ public class StudentServiceImpl extends ServiceImpl<StudentMapper, Student> impl
                     upgradeWrapper.set("stu_password", PasswordUtil.hashIfNeeded(student.getStuPassword()));
                     this.update(null, upgradeWrapper);
                 }
+                // 登录成功后生成 JWT token
+                current.setToken(jwtUtil.generateToken("student", current.getStuId()));
                 return ResultVO.success("登录成功", current);
             } else {
                 return ResultVO.fail("密码错误");

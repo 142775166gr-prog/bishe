@@ -45,3 +45,10 @@ server:
   servlet:
     context-path: /
   port: 9999
+
+# JWT 配置（用于鉴权止血：只做最小实现）
+jwt:
+  # 请在生产环境改成足够长且随机的密钥
+  secret: "change-me-please-change-me-please"
+  # token 过期时间（毫秒），默认 7 天
+  expiration-ms: 604800000

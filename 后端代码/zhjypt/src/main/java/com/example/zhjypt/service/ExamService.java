@@ -73,12 +73,14 @@ public interface ExamService extends IService<Exam> {
     boolean hasSubmittedExam(Integer studentId, Integer examId);
 
     /**
-     * 创建考试记录
+     * 创建考试记录（学生每次开始考试生成一条）。当 {@code exam.attempt_limit} 非空且大于 0 时，
+     * 若当前学生该考试已有记录数已达上限，则抛出 {@link IllegalStateException}；{@code null} 或 0 表示不限次数（由实体约定）。
      */
     StudentExamRecord createExamRecord(Integer studentId, Integer examId, Integer totalScore);
 
     /**
-     * 提交考试记录
+     * 提交考试记录。服务端根据 {@code student_answer} 与题库 {@code question.correct_answer} 重算分数；
+     * 参数 {@code studentScore} 仅为兼容旧前端，将被忽略。
      */
     boolean submitExamRecord(Integer recordId, Integer timeUsed, Double studentScore);
 

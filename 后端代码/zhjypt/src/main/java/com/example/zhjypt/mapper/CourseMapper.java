@@ -34,7 +34,9 @@ public interface CourseMapper extends BaseMapper<Course> {
     /**
      * 获取已发布的课程列表（学生视图）
      */
-    @Select("SELECT c.*, t.teach_name as teacher_name, cc.category_name FROM course c " +
+    @Select("SELECT c.*, t.teach_name as teacher_name, cc.category_name, " +
+            "(SELECT COUNT(*) FROM student_course sc WHERE sc.course_id = c.course_id AND sc.status = 1) as studentCount " +
+            "FROM course c " +
             "LEFT JOIN teacher t ON c.teacher_id = t.teach_id " +
             "LEFT JOIN course_category cc ON c.category_id = cc.category_id " +
             "WHERE c.course_status = 1 AND c.del = 0 " +
@@ -44,7 +46,9 @@ public interface CourseMapper extends BaseMapper<Course> {
     /**
      * 根据分类获取已发布的课程
      */
-    @Select("SELECT c.*, t.teach_name as teacher_name, cc.category_name FROM course c " +
+    @Select("SELECT c.*, t.teach_name as teacher_name, cc.category_name, " +
+            "(SELECT COUNT(*) FROM student_course sc WHERE sc.course_id = c.course_id AND sc.status = 1) as studentCount " +
+            "FROM course c " +
             "LEFT JOIN teacher t ON c.teacher_id = t.teach_id " +
             "LEFT JOIN course_category cc ON c.category_id = cc.category_id " +
             "WHERE c.course_status = 1 AND c.del = 0 AND c.category_id = #{categoryId} " +
@@ -54,7 +58,9 @@ public interface CourseMapper extends BaseMapper<Course> {
     /**
      * 获取课程详情（带教师姓名和分类名称）
      */
-    @Select("SELECT c.*, t.teach_name as teacher_name, cc.category_name FROM course c " +
+    @Select("SELECT c.*, t.teach_name as teacher_name, cc.category_name, " +
+            "(SELECT COUNT(*) FROM student_course sc WHERE sc.course_id = c.course_id AND sc.status = 1) as studentCount " +
+            "FROM course c " +
             "LEFT JOIN teacher t ON c.teacher_id = t.teach_id " +
             "LEFT JOIN course_category cc ON c.category_id = cc.category_id " +
             "WHERE c.course_id = #{courseId} AND c.del = 0")
@@ -109,7 +115,9 @@ public interface CourseMapper extends BaseMapper<Course> {
      * 分页查询已发布课程列表（学生视图）- 带教师姓名和分类名称
      */
     @Select("<script>" +
-            "SELECT c.*, t.teach_name as teacher_name, cc.category_name FROM course c " +
+            "SELECT c.*, t.teach_name as teacher_name, cc.category_name, " +
+            "(SELECT COUNT(*) FROM student_course sc WHERE sc.course_id = c.course_id AND sc.status = 1) as studentCount " +
+            "FROM course c " +
             "LEFT JOIN teacher t ON c.teacher_id = t.teach_id " +
             "LEFT JOIN course_category cc ON c.category_id = cc.category_id " +
             "WHERE c.del = 0 AND c.course_status = 1 " +

@@ -5,15 +5,18 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.zhjypt.mapper.ExamMapper;
 import com.example.zhjypt.mapper.QuestionMapper;
 import com.example.zhjypt.mapper.StudentAnswerMapper;
 import com.example.zhjypt.mapper.StudentExamRecordMapper;
+import com.example.zhjypt.pojo.Exam;
 import com.example.zhjypt.pojo.Question;
 import com.example.zhjypt.pojo.StudentAnswer;
 import com.example.zhjypt.pojo.StudentExamRecord;
 import com.example.zhjypt.service.StudentAnswerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -40,6 +43,9 @@ public class StudentAnswerServiceImpl extends ServiceImpl<StudentAnswerMapper, S
     @Autowired
     private StudentExamRecordMapper studentExamRecordMapper;
 
+    @Autowired
+    private ExamMapper examMapper;
+
     @Override
     public boolean saveStudentAnswer(Integer recordId, Integer questionId, String studentAnswer, Integer questionScore) {
         try {
@@ -49,9 +55,20 @@ public class StudentAnswerServiceImpl extends ServiceImpl<StudentAnswerMapper, S
             StudentAnswer existingAnswer = getOne(wrapper);
 
             if (existingAnswer != null) {
-                // 更新现有记录
+                // 更新现有记录（客观题必须服务端重算得分，不信任客户端）
                 existingAnswer.setStudentAnswer(studentAnswer);
                 existingAnswer.setAnswerTime(new Date());
+                Question question = questionMapper.selectById(questionId);
+                if (question != null && question.getQuestionType() != null && question.getQuestionType() <= 3) {
+                    int maxScore = question.getQuestionScore() != null
+                            ? question.getQuestionScore()
+                            : (questionScore != null ? questionScore : 0);
+                    existingAnswer.setQuestionScore(maxScore);
+                    existingAnswer.setIsCorrect(checkObjectiveAnswer(question, studentAnswer));
+                    existingAnswer.setStudentScore(existingAnswer.getIsCorrect() == 1
+                            ? BigDecimal.valueOf(maxScore)
+                            : BigDecimal.ZERO);
+                }
                 return updateById(existingAnswer);
             } else {
                 // 获取教师ID（通过 record -> exam -> course -> teacher）
@@ -70,16 +87,17 @@ public class StudentAnswerServiceImpl extends ServiceImpl<StudentAnswerMapper, S
                 answer.setQuestionScore(questionScore);
                 answer.setAnswerTime(new Date());
                 
-                // 获取题目信息，判断是否为客观题
+                // 获取题目信息，判断是否为客观题（分值以题库为准）
                 Question question = questionMapper.selectById(questionId);
-                if (question != null && question.getQuestionType() <= 3) {
-                    // 客观题（1单选，2多选，3判断）自动评分
+                if (question != null && question.getQuestionType() != null && question.getQuestionType() <= 3) {
+                    int maxScore = question.getQuestionScore() != null
+                            ? question.getQuestionScore()
+                            : (questionScore != null ? questionScore : 0);
+                    answer.setQuestionScore(maxScore);
                     answer.setIsCorrect(checkObjectiveAnswer(question, studentAnswer));
-                    if (answer.getIsCorrect() == 1) {
-                        answer.setStudentScore(BigDecimal.valueOf(questionScore));
-                    } else {
-                        answer.setStudentScore(BigDecimal.ZERO);
-                    }
+                    answer.setStudentScore(answer.getIsCorrect() == 1
+                            ? BigDecimal.valueOf(maxScore)
+                            : BigDecimal.ZERO);
                 } else {
                     // 主观题（4填空，5简答）等待批改
                     answer.setIsCorrect(null);
@@ -111,6 +129,54 @@ public class StudentAnswerServiceImpl extends ServiceImpl<StudentAnswerMapper, S
             // 保存完答案后，计算客观题总分并更新考试记录
             updateExamRecordScore(recordId);
             
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean recalculateScoresFromServer(Integer recordId) {
+        try {
+            QueryWrapper<StudentAnswer> wrapper = new QueryWrapper<>();
+            wrapper.eq("record_id", recordId);
+            List<StudentAnswer> answers = list(wrapper);
+            if (answers == null || answers.isEmpty()) {
+                StudentExamRecord record = studentExamRecordMapper.selectById(recordId);
+                if (record != null) {
+                    record.setStudentScore(BigDecimal.ZERO);
+                    record.setExamStatus(1);
+                    record.setPassStatus(null);
+                    studentExamRecordMapper.updateById(record);
+                }
+                return true;
+            }
+            for (StudentAnswer ans : answers) {
+                Question q = questionMapper.selectById(ans.getQuestionId());
+                if (q == null) {
+                    continue;
+                }
+                Integer qt = q.getQuestionType();
+                if (qt != null && qt <= 3) {
+                    int maxScore = q.getQuestionScore() != null
+                            ? q.getQuestionScore()
+                            : (ans.getQuestionScore() != null ? ans.getQuestionScore() : 0);
+                    ans.setQuestionScore(maxScore);
+                    String raw = ans.getStudentAnswer();
+                    ans.setIsCorrect(checkObjectiveAnswer(q, raw != null ? raw : ""));
+                    ans.setStudentScore(Integer.valueOf(1).equals(ans.getIsCorrect())
+                            ? BigDecimal.valueOf(maxScore)
+                            : BigDecimal.ZERO);
+                } else {
+                    // 主观题：交卷后仅保留答案文本，得分由教师批改写入
+                    ans.setIsCorrect(null);
+                    ans.setStudentScore(null);
+                }
+                updateById(ans);
+            }
+            updateExamRecordScore(recordId);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -213,9 +279,14 @@ public class StudentAnswerServiceImpl extends ServiceImpl<StudentAnswerMapper, S
                 if (!hasUngraded) {
                     // 所有题目都已批改，更新状态
                     record.setExamStatus(2); // 已批改
+                    Exam exam = examMapper.selectById(record.getExamId());
+                    if (exam != null && exam.getPassScore() != null && record.getStudentScore() != null) {
+                        record.setPassStatus(record.getStudentScore().doubleValue() >= exam.getPassScore() ? 1 : 0);
+                    }
                 } else {
                     // 还有主观题未批改
                     record.setExamStatus(1); // 待批改
+                    record.setPassStatus(null);
                 }
                 studentExamRecordMapper.updateById(record);
             }

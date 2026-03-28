@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.zhjypt.pojo.Announcement;
 import com.example.zhjypt.service.AnnouncementService;
 import com.example.zhjypt.vo.ResultVO;
+import com.example.zhjypt.security.JwtContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,7 +123,13 @@ public class AnnouncementController {
             @RequestParam Integer userId,
             @RequestParam String userType) {
         try {
-            List<Announcement> announcements = announcementService.getUnreadAnnouncements(userId, userType);
+            // 越权止血：忽略前端传入的 userId/userType，仅使用 token 中身份
+            if (JwtContext.getCurrentUser() == null) {
+                return ResultVO.fail("未授权");
+            }
+            Integer uid = JwtContext.getCurrentUser().getUid();
+            String role = JwtContext.getCurrentUser().getRole();
+            List<Announcement> announcements = announcementService.getUnreadAnnouncements(uid, role);
             return ResultVO.success("查询成功", announcements);
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,7 +144,13 @@ public class AnnouncementController {
             @RequestParam Integer userId,
             @RequestParam String userType) {
         try {
-            boolean success = announcementService.markAsRead(announcementId, userId, userType);
+            // 越权止血：忽略前端传入的 userId/userType，仅使用 token 中身份
+            if (JwtContext.getCurrentUser() == null) {
+                return ResultVO.fail("未授权");
+            }
+            Integer uid = JwtContext.getCurrentUser().getUid();
+            String role = JwtContext.getCurrentUser().getRole();
+            boolean success = announcementService.markAsRead(announcementId, uid, role);
             if (success) {
                 return ResultVO.success("标记成功");
             } else {
