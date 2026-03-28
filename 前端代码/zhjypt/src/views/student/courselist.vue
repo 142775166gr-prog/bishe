@@ -224,8 +224,8 @@ export default {
         this.loading = false
       }
     },
-// 检查课程列表的选课状态
-    // 检查课程列表的选课状态
+
+    // 检查课程列表选课状态
     async checkEnrollmentStatus() {
       if (!this.currentStudent) return
       
