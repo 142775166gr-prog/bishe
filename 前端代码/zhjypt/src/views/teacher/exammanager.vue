@@ -30,6 +30,11 @@
           </template>
         </el-table-column>
         
+        <el-table-column label="次数限制" width="100" align="center">
+          <template #default="{ row }">
+            <span>{{ row.attemptLimit != null && row.attemptLimit > 0 ? row.attemptLimit + ' 次' : '不限' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="examStatus" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.examStatus === 1 ? 'success' : 'info'" size="small">
@@ -152,6 +157,18 @@
             </el-form-item>
           </el-col>
         </el-row>
+
+        <el-form-item label="允许考试次数" prop="attemptLimit">
+          <el-input-number
+            v-model="examForm.attemptLimit"
+            :min="0"
+            :max="99"
+            :precision="0"
+            placeholder="0 表示不限"
+            style="width: 200px;"
+          />
+          <span class="form-hint">0 表示不限制次数；≥1 表示每位学生最多可参加该场考试的次数（每次开始考试计 1 次）</span>
+        </el-form-item>
         
         <el-row>
           <el-col :span="12">
@@ -205,6 +222,7 @@ export default {
         totalScore: 100,
         passScore: 60,
         timeLimit: null,
+        attemptLimit: 0,
         showResult: 1,
         showAnswer: 1
       }
@@ -252,6 +270,7 @@ export default {
         totalScore: 100,
         passScore: 60,
         timeLimit: null,
+        attemptLimit: 0,
         showResult: 1,
         showAnswer: 1
       }
@@ -268,6 +287,7 @@ export default {
         totalScore: exam.totalScore,
         passScore: exam.passScore,
         timeLimit: exam.timeLimit,
+        attemptLimit: exam.attemptLimit != null && exam.attemptLimit > 0 ? exam.attemptLimit : 0,
         showResult: exam.showResult,
         showAnswer: exam.showAnswer
       }
@@ -280,7 +300,8 @@ export default {
         
         const params = {
           ...this.examForm,
-          courseId: this.courseId
+          courseId: this.courseId,
+          attemptLimit: this.examForm.attemptLimit > 0 ? this.examForm.attemptLimit : null
         }
         
         let res
@@ -400,6 +421,16 @@ export default {
   color: #fff;
   font-size: 18px;
   font-weight: 700;
+}
+
+.form-hint {
+  display: inline-block;
+  margin-left: 12px;
+  color: #64748b;
+  font-size: 12px;
+  max-width: 420px;
+  vertical-align: middle;
+  line-height: 1.45;
 }
 
 .exam-title-cell {

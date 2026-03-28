@@ -338,7 +338,12 @@ export default {
 
         if (response && response.flag) {
           // 保存用户信息
-          setSessionStorage('curuser', { role: this.role, info: response.result });
+          // response.result 为用户对象（服务端登录时会注入 token 字段）
+          setSessionStorage('curuser', {
+            role: this.role,
+            info: response.result,
+            token: response.result && response.result.token ? response.result.token : null
+          });
           if (this.role === 'admin') setSessionStorage('curadmin', response.result);
 
           // 根据角色把预定义菜单加载到运行时 menus

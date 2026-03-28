@@ -1,5 +1,6 @@
 import axios from 'axios';
 import qs from 'qs'
+import { getSessionStorage } from '../utils/common';
 const instance = axios.create({
     baseURL: 'http://localhost:9999/',
 });
@@ -8,8 +9,17 @@ instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlenco
 
 // 添加请求拦截器
 instance.interceptors.request.use(function (config) {  
-    // 在发送请求之前做些什么
-    // console.log(config)
+    // 在发送请求之前：自动携带 JWT token
+    try {
+        const cur = getSessionStorage('curuser') || getSessionStorage('curadmin');
+        const token = (cur && cur.token) ? cur.token : (cur && cur.info && cur.info.token ? cur.info.token : null);
+        if (token) {
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    } catch (e) {
+        // ignore
+    }
     return config;
   }, function (error) {
     // 对请求错误做些什么

@@ -159,7 +159,7 @@ export default {
       list: [],
       total: 0,
       pageNum: 1,
-      pageSize: 8,
+      pageSize: 6,
       loading: false,
 
       categories: [],
